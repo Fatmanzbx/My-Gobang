@@ -1,21 +1,22 @@
+//Start the game
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 public class Start extends JFrame {
 	public Start() {
-		//创造按钮和背景
-	    JButton jbt1 = new JButton("棋手执黑");
+		//set back ground
+	    JButton jbt1 = new JButton("Play black");
 	    jbt1.setBounds(70,160,140,30);
-	    JButton jbt2 = new JButton("棋手执白");
+	    JButton jbt2 = new JButton("Play White");
 	    jbt2.setBounds(70,215,140,30);
-	    JButton jbt3 = new JButton("双人大战");
+	    JButton jbt3 = new JButton("2 Player");
 	    jbt3.setBounds(70,270,140,30);;
 	    BackgroundPanel panel = new BackgroundPanel();
 	    panel.add(jbt1);
 	    panel.add(jbt2);
 	    panel.add(jbt3);
 	    add(panel); 
-	    // 设定按钮
+	    // set buttons
 	    jbt1.addActionListener(
 	    		new ActionListener() {
 	    			public void actionPerformed(ActionEvent e) {
@@ -39,7 +40,7 @@ public class Start extends JFrame {
 	        	);
 	}
 	public void initialize(String s) {
-		//开始游戏
+		//Start game
 		Main m = new Main(s);
 		m.setSize(560, 700);
 		m.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -53,7 +54,7 @@ class BackgroundPanel extends JPanel{
 		this.setOpaque(true);
 		this.setLayout(null);
 	}
-	//画背景
+	//draw back ground
 	public void paintComponent(Graphics g){
 		super.paintComponents(g);
 		g.drawImage(Img,0,0,this.getWidth(),this.getHeight(),this);

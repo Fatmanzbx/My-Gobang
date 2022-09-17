@@ -1,4 +1,4 @@
-//棋手执白，AI先把第一步下好
+//Player play white
 public class PlayWhite extends DrawChessBoard {
 	public PlayWhite() {
 		mode=1;

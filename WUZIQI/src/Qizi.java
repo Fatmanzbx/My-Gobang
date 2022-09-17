@@ -1,4 +1,4 @@
-//辅助复盘以及悔棋功能
+//help record game
 public class Qizi {
 	int color;
 	int hang;

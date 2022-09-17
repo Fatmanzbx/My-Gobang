@@ -1,13 +1,14 @@
 
+//A class for chessboard
 public class Qipan {
-	private int[][] cb = new int[15][15];//记录局势
+	private int[][] cb = new int[15][15];//record game
 	public int getQipan(int i, int j) {
 		return cb[i][j];
 	}
 	public void setQipan(int i, int j, int color) {
 		this.cb[i][j]=color;
 	}
-	//判断输赢
+	//Judege for result
 	public int pan (){
 		int caipan =0;
 		for(int i=0;i<15;i++) {

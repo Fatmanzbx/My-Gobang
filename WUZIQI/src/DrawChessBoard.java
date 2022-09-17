@@ -1,4 +1,4 @@
-//画出棋盘以及落子，还包括悔棋等方法
+//draw chessboard and chessman
 import java.util.*;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -27,14 +27,14 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 	final private int ROWS = 15;
 	final private int COLS = 15;
 	protected Chessman[][] chessStatus=new Chessman[COLS][ROWS];
-	//对弈构造方法			
+	//Constructor of a game		
 	public DrawChessBoard() {
 		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/qipan.jpg"));
 		if(boardImg == null)
 			System.err.println("image do not exist");
 		addMouseListener(this);
 	}
-	//复盘构造方法
+	//Constructor to record a game
 	public DrawChessBoard(Qizi[] qizi) {
 		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/qipan.jpg"));
 		if(boardImg == null)
@@ -51,7 +51,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 		}
 		setLayout(null);
 	}
-	//悔棋
+	//withdraw
 	public void withDraw(int k) {
 		if(bushu>=k&&end!=mode) {
 			for(int i=0;i<k;i++) {
@@ -65,7 +65,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 			repaint();
 		}
 	}
-	//复盘中的后退一步
+	//last step in record
 	public void goBack() {
 		if(bushu>stepback) {
 		qipan.setQipan(qizi[bushu-stepback].getHang(),qizi[bushu-stepback].getLie(),0);
@@ -74,7 +74,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 		repaint();
 		}
 	}
-	//复盘中的前进一步
+	//next step in record
 	public void goForward() {
 		if(stepback>0) {
 		qipan.setQipan(qizi[bushu-stepback+1].getHang(),qizi[bushu-stepback+1].getLie(),qizi[bushu-stepback+1].getColor());
@@ -83,9 +83,9 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 		repaint();
 		}
 	}
-	//初始化一个下棋方法，在后面重载
+	// initialize a function to play chess. Will be reloaded latter
 	public void xiaqi(int hang,int lie) {} 
-	//判输赢
+	//Judgment for win and loss
 	public void judge(){
 		this.end=qipan.pan();
 		if(end==-1) 
@@ -93,7 +93,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 		if(end==1)
 		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/Whitewin.jpg"));	
 	}
-	//调用AI
+	//Use AI
 	public void ai(Qipan a,int color) {
 		int trycb[][]=new int[15][15];
 		for(int i=0; i<15; i++) {
@@ -108,15 +108,15 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 		qipan.setQipan(result[0], result[1],-color);
 		qizi[bushu]=new Qizi(-color,result[0],result[1]);
 	}
-	//返回棋子数据，存盘用
+	//Return chessmen of the game to save
 	public Qizi getQizi(int number) {
 		return qizi[number];
 	}
-	//返回步数，存盘用
+	//Get the number of steps
 	public int getBushu() {
 		return bushu;
 	}
-	//画图
+	//draw picture
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		int imgWidth = boardImg.getWidth(this)-140;
@@ -179,7 +179,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 			}
 		}
 	}
-	//鼠标响应
+	//Mose reaction
 	public void mouseClicked(MouseEvent e) {
 		// TODO Auto-generated method stub
 		int x=e.getX();

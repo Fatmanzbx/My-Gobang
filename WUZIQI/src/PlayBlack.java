@@ -1,4 +1,4 @@
-//棋手执黑，先把第二步下好
+//Player play balck
 public class PlayBlack extends DrawChessBoard {
 	public PlayBlack() {
 		mode=-1;

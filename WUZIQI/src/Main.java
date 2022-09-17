@@ -6,17 +6,17 @@ import java.io.PrintWriter;
 import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-//创建棋盘面板
+//Creat Chess board panel
 public class Main extends JFrame{
-	File file = new File("棋谱.txt");
-	JButton jbt1 = new JButton("悔棋");
-    JButton jbt2 = new JButton("保存");
-    JButton jbt3 = new JButton("棋谱");
-    JButton jbt4 = new JButton("菜单");
+	File file = new File("record.txt");
+	JButton jbt1 = new JButton("go back");
+    JButton jbt2 = new JButton("save");
+    JButton jbt3 = new JButton("view record");
+    JButton jbt4 = new JButton("menue");
     JButton jbt5 = new JButton("<<<");
     JButton jbt6 = new JButton(">>>");
 	private DrawChessBoard drawChessBoard;
-	//复盘构造方法
+	//Method to record a game
 	public Main(Qizi[] qizi) {
 		drawChessBoard=new DrawChessBoard(qizi);
 		drawChessBoard.add(jbt4);
@@ -25,14 +25,14 @@ public class Main extends JFrame{
 		jbt5.setBounds(10,300,50,100);
 		drawChessBoard.add(jbt6);
 		jbt6.setBounds(500,300,50,100);
-		setTitle("五子棋");	
+		setTitle("Gobang");	
         add(drawChessBoard);
-        // 返回菜单
+        // go back to menue
         jbt4.addActionListener(
     	    	new ActionListener() {
     	    		public void actionPerformed(ActionEvent e) {
     	    			Start frame = new Start();
-    	    			frame.setTitle("五子棋：请选择游戏模式");
+    	    			frame.setTitle("Gobang: Select mode");
     	    			frame.setSize(280,350);
     	    			frame.setLocation(280, 350);
     	    		    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -41,7 +41,7 @@ public class Main extends JFrame{
     	    		}
     	    	}
     	    	);
-        //复盘，后退一步
+        //See last step of record
         jbt5.addActionListener(
     	    	new ActionListener() {
     	    		public void actionPerformed(ActionEvent e) {
@@ -49,7 +49,7 @@ public class Main extends JFrame{
     	    		}
     	    	}
     	    	);
-        //复盘，前进一步
+        //see next step of record
         jbt6.addActionListener(
     	    	new ActionListener() {
     	    		public void actionPerformed(ActionEvent e) {
@@ -58,7 +58,7 @@ public class Main extends JFrame{
     	    	}
     	    	);
 	}
-	//下棋构造方法
+	//Play game
 	public Main(String SET) {
 		if(SET=="Play Black") 
 		drawChessBoard = new PlayBlack();
@@ -74,7 +74,7 @@ public class Main extends JFrame{
 		jbt3.setPreferredSize(new Dimension(200, 30));
 		drawChessBoard.add(jbt4);
 		jbt4.setPreferredSize(new Dimension(200, 30));
-		//悔棋
+		//withdraw
 		jbt1.addActionListener(
 	    	new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
@@ -82,7 +82,7 @@ public class Main extends JFrame{
 	    		}
 	    	}
 	    	);
-		//存盘
+		//save
 		jbt2.addActionListener(
 	    	new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
@@ -104,7 +104,7 @@ public class Main extends JFrame{
 	    		}
 	    	}
 	    	);
-		//读取
+		//read
 		jbt3.addActionListener(
 		    	new ActionListener() {
 		    		public void actionPerformed(ActionEvent e) {
@@ -134,12 +134,12 @@ public class Main extends JFrame{
 		    		}
 		    	}
 		    	);
-		//返回菜单
+		//return to menue
 		jbt4.addActionListener(
 	    	new ActionListener() {
 	    		public void actionPerformed(ActionEvent e) {
 	    			Start frame = new Start();
-	    			frame.setTitle("五子棋：请选择游戏模式");
+	    			frame.setTitle("Gobang: Select mode");
 	    			frame.setSize(280,350);
 	    			frame.setLocation(280, 350);
 	    		    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -148,13 +148,13 @@ public class Main extends JFrame{
 	    		}
 	    	}
 	    	);
-		setTitle("五子棋");	
+		setTitle("Gobang");	
 		add(drawChessBoard);
 	}
 	public static void main(String[] args) {
-		//初始化一个菜单面板
+		//initialize a menue panel
 		Start frame = new Start();
-		frame.setTitle("五子棋：请选择游戏模式");
+		frame.setTitle("Gobang: Select mode");
 		frame.setSize(280,350);
 		frame.setLocation(280, 350);
 	    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

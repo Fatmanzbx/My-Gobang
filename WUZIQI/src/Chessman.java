@@ -1,4 +1,4 @@
-//辅助画棋子的功能
+//help with drawing chessmen
 public class Chessman {
 	private int color;//1-white  -1-black
 	private boolean placed = false;

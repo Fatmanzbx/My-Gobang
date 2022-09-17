@@ -1,4 +1,4 @@
-//输入trycb数组，返回一个二维数组来确定AI反应
+//Input data, which is a 2 dimensional array to get reaction of AI
 public class AI{
 	private int mode;
 	private int countscore;
@@ -16,7 +16,7 @@ public class AI{
 			}
 		}
 	}
-	//判断一个子周围一定范围是否有子
+	//determine whether there are other chess piece around one certain chess piece
 	public boolean neighbor(int distance, int hang, int lie) {
 		boolean neighbor=false;
 		int edge1=Math.min(hang, distance);
@@ -33,7 +33,7 @@ public class AI{
 		}
 		return neighbor;
 	}
-	//统计活二活3活4
+	//Calculate 2,  3 ,  and 4 consecutive pieces
 	public int[] H432(int color) {
 		int score=0;
 		int block=0;//to record whether need to block immediately
@@ -100,7 +100,7 @@ public class AI{
 		int[] a={block,score};
 		return a;
 	}
-	//统计棉四和五连
+	//Count 4 and 5 consecutive pieces
 	public int[] H5(int color) {
 		int block=0;
 		int addscore=0;
@@ -157,7 +157,7 @@ public class AI{
 		int a[]= {block,addscore};
 		return a;
 	}
-	//用上面的赋分函数迭代进行决策
+	//Use the score above to make decision. Use induction. 
 	public void countScore(int color,int deep,int num) {
 		for(int hang=0;hang<=14;hang++) {
 			for(int lie=0;lie<=14;lie++) {
@@ -259,7 +259,7 @@ public class AI{
 			System.out.println(score[deep][max]);
 		}
 	}
-	//返回结果
+	//return result
 	public int[] getResult(){
 		countScore(-mode,0,0);
 		return result;
