@@ -1,227 +1,411 @@
-//draw chessboard and chessman
-import java.util.*;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RadialGradientPaint;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.*;
-import java.awt.Color;
-import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-public class DrawChessBoard extends JPanel implements MouseListener, MouseMotionListener{
-	final static int BLACK=-1;
-	final static int WHITE=1;
-	protected AI ai;
-	private int Gao;
-	private int Kuan;
-	private int edge1;
-	private int edge2;
-	private int stepback=0;
-	protected int bushu = 0;
-	protected int end=0;
-	protected int mode=2;
-	protected Qipan qipan=new Qipan();
-	protected Qizi[] qizi=new Qizi[226];
-	public Image boardImg;
-	final private int ROWS = 15;
-	final private int COLS = 15;
-	protected Chessman[][] chessStatus=new Chessman[COLS][ROWS];
-	//Constructor of a game		
-	public DrawChessBoard() {
-		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/qipan.jpg"));
-		if(boardImg == null)
-			System.err.println("image do not exist");
-		addMouseListener(this);
-	}
-	//Constructor to record a game
-	public DrawChessBoard(Qizi[] qizi) {
-		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/qipan.jpg"));
-		if(boardImg == null)
-			System.err.println("image do not exist");
-		addMouseListener(this);
-		this.qizi=qizi;
-		for(int i=1;i<qizi.length;i++) {
-			if(qizi[i]==null) {
-				this.bushu=i-1;
-				break;
-			}
-			chessStatus[qizi[i].getHang()][qizi[i].getLie()]=new Chessman(qizi[i].getColor(),true);
-			qipan.setQipan(qizi[i].getHang(), qizi[i].getLie(), qizi[i].getColor());
-		}
-		setLayout(null);
-	}
-	//withdraw
-	public void withDraw(int k) {
-		if(bushu>=k&&end!=mode) {
-			for(int i=0;i<k;i++) {
-			qipan.setQipan(qizi[bushu-i].getHang(),qizi[bushu-i].getLie(),0);
-			chessStatus[qizi[bushu-i].getHang()][qizi[bushu-i].getLie()]=null;
-			qizi[bushu-i]=null;
-			}
-			bushu-=k;
-			end=0;
-			boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/qipan.jpg"));
-			repaint();
-		}
-	}
-	//last step in record
-	public void goBack() {
-		if(bushu>stepback) {
-		qipan.setQipan(qizi[bushu-stepback].getHang(),qizi[bushu-stepback].getLie(),0);
-		chessStatus[qizi[bushu-stepback].getHang()][qizi[bushu-stepback].getLie()]=null;
-		stepback++;
-		repaint();
-		}
-	}
-	//next step in record
-	public void goForward() {
-		if(stepback>0) {
-		qipan.setQipan(qizi[bushu-stepback+1].getHang(),qizi[bushu-stepback+1].getLie(),qizi[bushu-stepback+1].getColor());
-		chessStatus[qizi[bushu-stepback+1].getHang()][qizi[bushu-stepback+1].getLie()]=new Chessman(qizi[bushu-stepback+1].getColor(),true);
-		stepback--;
-		repaint();
-		}
-	}
-	// initialize a function to play chess. Will be reloaded latter
-	public void xiaqi(int hang,int lie) {} 
-	//Judgment for win and loss
-	public void judge(){
-		this.end=qipan.pan();
-		if(end==-1) 
-		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/Blackwin.jpg"));
-		if(end==1)
-		boardImg = Toolkit.getDefaultToolkit().getImage(JPanel.class.getResource("/Whitewin.jpg"));	
-	}
-	//Use AI
-	public void ai(Qipan a,int color) {
-		int trycb[][]=new int[15][15];
-		for(int i=0; i<15; i++) {
-			for(int j=0; j<15; j++) {
-				trycb[i][j]=qipan.getQipan(i,j);
-			}
-		}
-		ai=new AI(trycb,color);
-		int[] result=new int[2];
-		result=ai.getResult();
-		this.chessStatus[result[0]][result[1]]=new Chessman(-color, true);
-		qipan.setQipan(result[0], result[1],-color);
-		qizi[bushu]=new Qizi(-color,result[0],result[1]);
-	}
-	//Return chessmen of the game to save
-	public Qizi getQizi(int number) {
-		return qizi[number];
-	}
-	//Get the number of steps
-	public int getBushu() {
-		return bushu;
-	}
-	//draw picture
-	protected void paintComponent(Graphics g) {
-		super.paintComponent(g);
-		int imgWidth = boardImg.getWidth(this)-140;
-		int imgHeight = boardImg.getHeight(this)-280;
-		int FWidth = getWidth();
-		int FHeight= getHeight();
-		
-		int x=(FWidth-imgWidth)/2;
-		this.edge1=x;
-		int y=(FHeight-imgHeight)/2;
-		this.edge2=y;
-		g.drawImage(boardImg, 0, 0, null);
-		
-		int span_x=imgWidth/(COLS-1);
-		this.Kuan=span_x;
-		int span_y=imgHeight/(ROWS-1);
-		this.Gao=span_y;
-		int margin_x = (imgWidth%COLS-1)/2+x;
-		int margin_y = (imgHeight%ROWS-1)/2+y;
-		for(int i=0;i<ROWS;i++)
-		{
-			g.drawLine(margin_x, margin_y+i*span_y, FWidth-margin_x, margin_y+i*span_y);
-		}
 
-		for(int i=0;i<COLS;i++)
-		{
-			g.drawLine(margin_x+i*span_x, margin_y, margin_x+i*span_x, FHeight-margin_y);
-		}
+/**
+ * Chess board panel that handles drawing and user interaction.
+ * This is the main game panel where the board is displayed and clicks are processed.
+ */
+public class DrawChessBoard extends JPanel implements MouseListener, MouseMotionListener {
+    
+    // Stone color constants
+    protected static final int BLACK = -1;
+    protected static final int WHITE = 1;
+    protected static final int EMPTY = 0;
+    
+    // Board dimensions
+    protected static final int BOARD_SIZE = 15;
+    
+    // Ban hand (foul) settings - can be toggled
+    protected boolean banHandEnabled = true;
+    
+    // Board state
+    protected Board board = new Board();
+    protected Chessman[][] chessDisplay = new Chessman[BOARD_SIZE][BOARD_SIZE];
+    protected Stone[] moveHistory = new Stone[226];
+    protected int moveCount = 0;
+    protected int gameResult = 0;  // 0 = ongoing, -1 = black wins, 1 = white wins
+    protected int mode = 2;  // Game mode identifier
+    
+    // For replay navigation
+    private int replayOffset = 0;
+    
+    // Drawing calculations
+    private int cellHeight;
+    private int cellWidth;
+    private int boardOffsetX;
+    private int boardOffsetY;
+    
+    // Images
+    protected Image boardImage;
+    protected AI ai;
+    protected volatile boolean aiThinking = false;
 
-		for(int i=0;i<COLS;i++)
-		{
-			for(int j=0;j<ROWS;j++)
-			{
-				if(chessStatus[i][j]!=null&&chessStatus[i][j].getPlaced()==true)
-				{
-					int pos_x=x+i*span_x;
-					int pos_y=y+j*span_y;
-					int chessman_width=20;
-					float radius_b=20;
-					float radius_w=50;
-					float[] fractions = new float[]{0f,1f};
-					Color[] colors_b = new Color[]{Color.BLUE,Color.BLACK};
-					Color[] colors_w = new Color[]{Color.WHITE,Color.YELLOW};
-					RadialGradientPaint paint;
-					if(chessStatus[i][j].getColor()==1)
-					{
-						paint = new RadialGradientPaint(pos_x, pos_y, radius_w, fractions, colors_w);
-						((Graphics2D)g).setPaint(paint);
-						
-						((Graphics2D)g).fillOval(pos_x-chessman_width/2,pos_y-chessman_width/2,chessman_width,chessman_width);
-					}
-					if(chessStatus[i][j].getColor()==-1){
-						paint = new RadialGradientPaint(pos_x-chessman_width/2f, pos_y-chessman_width/2f, radius_b*2, fractions, colors_b);
-					
-					((Graphics2D)g).setPaint(paint);
-					
-					((Graphics2D)g).fillOval(pos_x-chessman_width/2,pos_y-chessman_width/2,chessman_width,chessman_width);
-					}
-				}
-			}
-		}
-	}
-	//Mose reaction
-	public void mouseClicked(MouseEvent e) {
-		// TODO Auto-generated method stub
-		int x=e.getX();
-		int y=e.getY();
-		if(end==0) {
-			int hang = 0;
-			int lie = 0;
-			int valid=0;;
-			for(int i=0;i<15;i++) {
-				for(int j=0; j<15; j++) {
-					if((x-(i*Kuan+edge1))*(x-(i*Kuan+edge1))+(y-(j*Gao+edge2))*(y-(j*Gao+edge2))<(Kuan+Gao)*(Kuan+Gao)/25){
-						hang=i;lie=j;
-						valid++;
-						break;
-					}
-				}
-			}
-			if(valid==1&&qipan.getQipan(hang,lie)==0){
-				xiaqi(hang,lie);
-			}	
-		}	
-	}
-	@Override
-	public void mousePressed(MouseEvent e) {
-	}
-	@Override
-	public void mouseReleased(MouseEvent e) {
-	}
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-	@Override
-	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
-	@Override
-	public void mouseMoved(MouseEvent e) {
-		// TODO Auto-generated method stub
-	}
+    /**
+     * Constructor for starting a new game.
+     */
+    public DrawChessBoard() {
+        loadBoardImage();
+        addMouseListener(this);
+    }
+
+    /**
+     * Constructor for viewing a recorded game.
+     * @param stones Array of stones representing the recorded game
+     */
+    public DrawChessBoard(Stone[] stones) {
+        loadBoardImage();
+        addMouseListener(this);
+        this.moveHistory = stones;
+        
+        // Replay all moves to reconstruct board state
+        for (int i = 1; i < stones.length; i++) {
+            if (stones[i] == null) {
+                this.moveCount = i - 1;
+                break;
+            }
+            Stone stone = stones[i];
+            chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
+            board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
+        }
+        setLayout(null);
+    }
+
+    /**
+     * Loads the board background image.
+     */
+    private void loadBoardImage() {
+        boardImage = Toolkit.getDefaultToolkit().getImage(
+            DrawChessBoard.class.getResource("/qipan.jpg")
+        );
+        if (boardImage == null) {
+            System.err.println("Error: Board image not found");
+        }
+    }
+
+    /**
+     * Undo the last k moves.
+     * @param k Number of moves to undo
+     */
+    public void undoMove(int k) {
+        if (moveCount >= k && gameResult != mode) {
+            for (int i = 0; i < k; i++) {
+                Stone stone = moveHistory[moveCount - i];
+                board.setCell(stone.getRow(), stone.getCol(), 0);
+                chessDisplay[stone.getRow()][stone.getCol()] = null;
+                moveHistory[moveCount - i] = null;
+            }
+            moveCount -= k;
+            gameResult = 0;
+            loadBoardImage();
+            repaint();
+        }
+    }
+
+    /**
+     * Navigate to previous move in replay mode.
+     */
+    public void goBack() {
+        if (moveCount > replayOffset) {
+            Stone stone = moveHistory[moveCount - replayOffset];
+            board.setCell(stone.getRow(), stone.getCol(), 0);
+            chessDisplay[stone.getRow()][stone.getCol()] = null;
+            replayOffset++;
+            repaint();
+        }
+    }
+
+    /**
+     * Navigate to next move in replay mode.
+     */
+    public void goForward() {
+        if (replayOffset > 0) {
+            Stone stone = moveHistory[moveCount - replayOffset + 1];
+            board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
+            chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
+            replayOffset--;
+            repaint();
+        }
+    }
+    
+    /**
+     * Restores a move from a saved game (used when loading and continuing).
+     * @param stone The stone to restore
+     */
+    public void restoreMove(Stone stone) {
+        moveCount++;
+        chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
+        board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
+        moveHistory[moveCount] = stone;
+        checkGameEnd();
+        repaint();
+    }
+
+    /**
+     * Places a stone at the given position.
+     * Override in subclasses to implement game mode specific logic.
+     * @param row The row to place the stone
+     * @param col The column to place the stone
+     */
+    public void placeStone(int row, int col) {
+        // To be overridden by subclasses
+    }
+    
+    /**
+     * Checks if a move is a foul (ban hand) for black.
+     * @param row The row position
+     * @param col The column position
+     * @return true if the move is forbidden
+     */
+    protected boolean isFoulMove(int row, int col) {
+        if (!banHandEnabled) {
+            return false;
+        }
+        
+        // Get board state as 2D array
+        int[][] boardState = new int[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                boardState[i][j] = board.getCell(i, j);
+            }
+        }
+        
+        return AI.isFoulMove(row, col, boardState);
+    }
+    
+    /**
+     * Shows a foul warning message.
+     */
+    protected void showFoulWarning(String foulType) {
+        JOptionPane.showMessageDialog(this,
+            "Forbidden move (禁手): " + foulType + "\nBlack cannot make this move!",
+            "Foul Move",
+            JOptionPane.WARNING_MESSAGE);
+    }
+    
+    /**
+     * Enables or disables ban hand rules.
+     */
+    public void setBanHandEnabled(boolean enabled) {
+        this.banHandEnabled = enabled;
+    }
+
+    /**
+     * Checks for a winner and updates the game state.
+     */
+    protected void checkGameEnd() {
+        gameResult = board.checkWinner();
+        if (gameResult == BLACK) {
+            boardImage = Toolkit.getDefaultToolkit().getImage(
+                DrawChessBoard.class.getResource("/Blackwin.jpg")
+            );
+        } else if (gameResult == WHITE) {
+            boardImage = Toolkit.getDefaultToolkit().getImage(
+                DrawChessBoard.class.getResource("/Whitewin.jpg")
+            );
+        }
+    }
+
+    /**
+     * Makes the AI play a move.
+     * @param color The AI's stone color
+     */
+    protected void makeAIMove(int color) {
+        int[][] boardState = new int[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                boardState[i][j] = board.getCell(i, j);
+            }
+        }
+        
+        ai = new AI(boardState, color);
+        int[] result = ai.getResult();
+        
+        int aiColor = -color;
+        chessDisplay[result[0]][result[1]] = new Chessman(aiColor, true);
+        board.setCell(result[0], result[1], aiColor);
+        moveHistory[moveCount] = new Stone(aiColor, result[0], result[1]);
+    }
+
+    /**
+     * Runs the AI move computation off the UI thread and applies the result on the EDT.
+     * @param color The AI's stone color (same convention as makeAIMove)
+     */
+    protected void startAIMove(int color) {
+        if (aiThinking) {
+            return;
+        }
+        aiThinking = true;
+        int[][] boardState = new int[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                boardState[i][j] = board.getCell(i, j);
+            }
+        }
+
+        javax.swing.SwingWorker<int[], Void> worker = new javax.swing.SwingWorker<int[], Void>() {
+            @Override
+            protected int[] doInBackground() {
+                ai = new AI(boardState, color);
+                return ai.getResult();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    int[] result = get();
+                    int aiColor = -color;
+                    chessDisplay[result[0]][result[1]] = new Chessman(aiColor, true);
+                    board.setCell(result[0], result[1], aiColor);
+                    moveHistory[moveCount] = new Stone(aiColor, result[0], result[1]);
+                    checkGameEnd();
+                    repaint();
+                } catch (Exception e) {
+                    // Ignore AI failures; keep UI responsive
+                } finally {
+                    aiThinking = false;
+                }
+            }
+        };
+        worker.execute();
+    }
+
+    /**
+     * Gets a stone from the move history.
+     * @param moveNumber The move number (1-indexed)
+     * @return The stone at that move
+     */
+    public Stone getStone(int moveNumber) {
+        return moveHistory[moveNumber];
+    }
+
+    /**
+     * Gets the total number of moves played.
+     * @return The move count
+     */
+    public int getMoveCount() {
+        return moveCount;
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+        // Calculate board dimensions
+        int imgWidth = boardImage.getWidth(this) - 140;
+        int imgHeight = boardImage.getHeight(this) - 280;
+        int panelWidth = getWidth();
+        int panelHeight = getHeight();
+        
+        boardOffsetX = (panelWidth - imgWidth) / 2;
+        boardOffsetY = (panelHeight - imgHeight) / 2;
+        
+        // Draw board background
+        g.drawImage(boardImage, 0, 0, null);
+        
+        // Calculate cell size
+        cellWidth = imgWidth / (BOARD_SIZE - 1);
+        cellHeight = imgHeight / (BOARD_SIZE - 1);
+        
+        int marginX = (imgWidth % (BOARD_SIZE - 1)) / 2 + boardOffsetX;
+        int marginY = (imgHeight % (BOARD_SIZE - 1)) / 2 + boardOffsetY;
+        
+        // Draw grid lines
+        g.setColor(Color.BLACK);
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            // Horizontal lines
+            g.drawLine(marginX, marginY + i * cellHeight, 
+                      panelWidth - marginX, marginY + i * cellHeight);
+            // Vertical lines
+            g.drawLine(marginX + i * cellWidth, marginY, 
+                      marginX + i * cellWidth, panelHeight - marginY);
+        }
+        
+        // Draw stones
+        drawStones(g);
+    }
+
+    /**
+     * Draws all stones on the board.
+     */
+    private void drawStones(Graphics g) {
+        Graphics2D g2d = (Graphics2D) g;
+        int stoneSize = 20;
+        
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+                if (chessDisplay[i][j] != null && chessDisplay[i][j].getPlaced()) {
+                    int posX = boardOffsetX + i * cellWidth;
+                    int posY = boardOffsetY + j * cellHeight;
+                    
+                    float[] fractions = new float[]{0f, 1f};
+                    RadialGradientPaint paint;
+                    
+                    if (chessDisplay[i][j].getColor() == WHITE) {
+                        // White stone with gradient
+                        Color[] colors = new Color[]{Color.WHITE, Color.YELLOW};
+                        paint = new RadialGradientPaint(posX, posY, 50, fractions, colors);
+                    } else {
+                        // Black stone with gradient
+                        Color[] colors = new Color[]{Color.BLUE, Color.BLACK};
+                        paint = new RadialGradientPaint(
+                            posX - stoneSize / 2f, posY - stoneSize / 2f, 
+                            40, fractions, colors
+                        );
+                    }
+                    
+                    g2d.setPaint(paint);
+                    g2d.fillOval(
+                        posX - stoneSize / 2, posY - stoneSize / 2, 
+                        stoneSize, stoneSize
+                    );
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        if (gameResult != 0 || aiThinking) return; // Game ended or AI thinking
+        
+        int clickX = e.getX();
+        int clickY = e.getY();
+        
+        // Find the nearest grid intersection
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                int gridX = row * cellWidth + boardOffsetX;
+                int gridY = col * cellHeight + boardOffsetY;
+                
+                // Check if click is within range of this intersection
+                int distanceSquared = (clickX - gridX) * (clickX - gridX) + 
+                                     (clickY - gridY) * (clickY - gridY);
+                int threshold = (cellWidth + cellHeight) * (cellWidth + cellHeight) / 25;
+                
+                if (distanceSquared < threshold && board.getCell(row, col) == 0) {
+                    placeStone(row, col);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {}
+
+    @Override
+    public void mouseReleased(MouseEvent e) {}
+
+    @Override
+    public void mouseEntered(MouseEvent e) {}
+
+    @Override
+    public void mouseExited(MouseEvent e) {}
+
+    @Override
+    public void mouseDragged(MouseEvent e) {}
+
+    @Override
+    public void mouseMoved(MouseEvent e) {}
 }

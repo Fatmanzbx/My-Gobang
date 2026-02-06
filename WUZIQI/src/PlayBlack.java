@@ -1,39 +1,62 @@
-//Player play balck
+/**
+ * Game mode where the player plays as Black (first move).
+ * AI plays as White.
+ * Ban hand rules apply to the player's black stones.
+ */
 public class PlayBlack extends DrawChessBoard {
-	public PlayBlack() {
-		mode=-1;
-	}
-	public void xiaqi(int hang,int lie) {
-		bushu++;
-		this.chessStatus[hang][lie]=new Chessman(BLACK, true);
-		qipan.setQipan(hang, lie,BLACK);
-		qizi[bushu]=new Qizi(BLACK,hang,lie);
-		judge();
-		if(end==0) {
-			if(bushu>1) {
-				bushu++;
-				ai(qipan,BLACK);
-				judge();
-				
-			}else {
-				int hang1=8;
-				int lie1=8;
-				int[] x={1,1,-1,-1,0,0,1,-1};
-				int[] y={1,-1,-1,1,1,-1,0,0};
-				for(int i=0;i<8;i++) {
-					if(Math.abs(hang+x[i]-7)<=Math.abs(hang-7)&&Math.abs(lie+y[i]-7)<=Math.abs(lie-7)) {
-						hang1=hang+x[i];
-						lie1=lie+y[i];
-						break;
-					}	
-				}
-				bushu++;
-				this.chessStatus[hang1][lie1]=new Chessman(WHITE, true);
-				qipan.setQipan(hang1, lie1,WHITE);
-				qizi[bushu]=new Qizi(WHITE,hang1,lie1);
-				judge();
-			}
-		}
-		repaint();
-	} 
+    
+    public PlayBlack() {
+        mode = BLACK;
+    }
+    
+    @Override
+    public void placeStone(int row, int col) {
+        // Check for foul move (ban hand) before placing
+        if (banHandEnabled && isFoulMove(row, col)) {
+            showFoulWarning("This move violates ban hand rules (禁手)");
+            return; // Don't place the stone
+        }
+        
+        // Player places black stone
+        moveCount++;
+        chessDisplay[row][col] = new Chessman(BLACK, true);
+        board.setCell(row, col, BLACK);
+        moveHistory[moveCount] = new Stone(BLACK, row, col);
+        
+        checkGameEnd();
+        repaint();
+        
+        if (gameResult == 0) {
+            if (moveCount > 1) {
+                // AI makes a move
+                moveCount++;
+                startAIMove(BLACK);
+            } else {
+                // First move: AI places stone adjacent to player's stone, toward center
+                int aiRow = 8;
+                int aiCol = 8;
+                int[] rowOffsets = {1, 1, -1, -1, 0, 0, 1, -1};
+                int[] colOffsets = {1, -1, -1, 1, 1, -1, 0, 0};
+                
+                for (int i = 0; i < 8; i++) {
+                    int newRow = row + rowOffsets[i];
+                    int newCol = col + colOffsets[i];
+                    // Prefer positions closer to center
+                    if (Math.abs(newRow - 7) <= Math.abs(row - 7) && 
+                        Math.abs(newCol - 7) <= Math.abs(col - 7)) {
+                        aiRow = newRow;
+                        aiCol = newCol;
+                        break;
+                    }
+                }
+                
+                moveCount++;
+                chessDisplay[aiRow][aiCol] = new Chessman(WHITE, true);
+                board.setCell(aiRow, aiCol, WHITE);
+                moveHistory[moveCount] = new Stone(WHITE, aiRow, aiCol);
+                checkGameEnd();
+                repaint();
+            }
+        }
+    }
 }
