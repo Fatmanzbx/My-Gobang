@@ -13,6 +13,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
     protected static final int BLACK = -1;
     protected static final int WHITE = 1;
     protected static final int EMPTY = 0;
+    protected static final int DRAW = 2;
     
     // Board dimensions
     protected static final int BOARD_SIZE = 15;
@@ -36,6 +37,10 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
     private int cellWidth;
     private int boardOffsetX;
     private int boardOffsetY;
+
+    // Last move marker
+    private int lastMoveRow = -1;
+    private int lastMoveCol = -1;
     
     // Images
     protected Image boardImage;
@@ -69,6 +74,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
             chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
             board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
         }
+        updateLastMoveMarker();
         setLayout(null);
     }
 
@@ -89,7 +95,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
      * @param k Number of moves to undo
      */
     public void undoMove(int k) {
-        if (moveCount >= k && gameResult != mode) {
+        if (moveCount >= k) {
             for (int i = 0; i < k; i++) {
                 Stone stone = moveHistory[moveCount - i];
                 board.setCell(stone.getRow(), stone.getCol(), 0);
@@ -99,6 +105,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
             moveCount -= k;
             gameResult = 0;
             loadBoardImage();
+            updateLastMoveMarker();
             repaint();
         }
     }
@@ -112,6 +119,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
             board.setCell(stone.getRow(), stone.getCol(), 0);
             chessDisplay[stone.getRow()][stone.getCol()] = null;
             replayOffset++;
+            updateLastMoveMarker();
             repaint();
         }
     }
@@ -125,6 +133,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
             board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
             chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
             replayOffset--;
+            updateLastMoveMarker();
             repaint();
         }
     }
@@ -138,6 +147,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
         chessDisplay[stone.getRow()][stone.getCol()] = new Chessman(stone.getColor(), true);
         board.setCell(stone.getRow(), stone.getCol(), stone.getColor());
         moveHistory[moveCount] = stone;
+        setLastMove(stone.getRow(), stone.getCol());
         checkGameEnd();
         repaint();
     }
@@ -204,6 +214,11 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
             boardImage = Toolkit.getDefaultToolkit().getImage(
                 DrawChessBoard.class.getResource("/Whitewin.jpg")
             );
+        } else if (moveCount >= BOARD_SIZE * BOARD_SIZE) {
+            gameResult = DRAW;
+            boardImage = Toolkit.getDefaultToolkit().getImage(
+                DrawChessBoard.class.getResource("/Draw.jpg")
+            );
         }
     }
 
@@ -226,6 +241,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
         chessDisplay[result[0]][result[1]] = new Chessman(aiColor, true);
         board.setCell(result[0], result[1], aiColor);
         moveHistory[moveCount] = new Stone(aiColor, result[0], result[1]);
+        setLastMove(result[0], result[1]);
     }
 
     /**
@@ -259,6 +275,7 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
                     chessDisplay[result[0]][result[1]] = new Chessman(aiColor, true);
                     board.setCell(result[0], result[1], aiColor);
                     moveHistory[moveCount] = new Stone(aiColor, result[0], result[1]);
+                    setLastMove(result[0], result[1]);
                     checkGameEnd();
                     repaint();
                 } catch (Exception e) {
@@ -363,6 +380,14 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
                 }
             }
         }
+
+        if (lastMoveRow >= 0 && lastMoveCol >= 0) {
+            int posX = boardOffsetX + lastMoveRow * cellWidth;
+            int posY = boardOffsetY + lastMoveCol * cellHeight;
+            int markSize = 6;
+            g2d.setColor(Color.RED);
+            g2d.fillOval(posX - markSize / 2, posY - markSize / 2, markSize, markSize);
+        }
     }
 
     @Override
@@ -371,23 +396,25 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
         
         int clickX = e.getX();
         int clickY = e.getY();
-        
-        // Find the nearest grid intersection
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                int gridX = row * cellWidth + boardOffsetX;
-                int gridY = col * cellHeight + boardOffsetY;
-                
-                // Check if click is within range of this intersection
-                int distanceSquared = (clickX - gridX) * (clickX - gridX) + 
-                                     (clickY - gridY) * (clickY - gridY);
-                int threshold = (cellWidth + cellHeight) * (cellWidth + cellHeight) / 25;
-                
-                if (distanceSquared < threshold && board.getCell(row, col) == 0) {
-                    placeStone(row, col);
-                    return;
-                }
-            }
+
+        if (cellWidth <= 0 || cellHeight <= 0) return;
+
+        float fx = (clickX - boardOffsetX) / (float) cellWidth;
+        float fy = (clickY - boardOffsetY) / (float) cellHeight;
+        int row = Math.round(fx);
+        int col = Math.round(fy);
+
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) return;
+
+        int gridX = row * cellWidth + boardOffsetX;
+        int gridY = col * cellHeight + boardOffsetY;
+        int dx = clickX - gridX;
+        int dy = clickY - gridY;
+        int maxDist = Math.min(cellWidth, cellHeight) / 2;
+        if (dx * dx + dy * dy > maxDist * maxDist) return;
+
+        if (board.getCell(row, col) == 0) {
+            placeStone(row, col);
         }
     }
 
@@ -408,4 +435,19 @@ public class DrawChessBoard extends JPanel implements MouseListener, MouseMotion
 
     @Override
     public void mouseMoved(MouseEvent e) {}
+
+    protected void setLastMove(int row, int col) {
+        lastMoveRow = row;
+        lastMoveCol = col;
+    }
+
+    private void updateLastMoveMarker() {
+        int index = moveCount - replayOffset;
+        if (index >= 1 && moveHistory[index] != null) {
+            setLastMove(moveHistory[index].getRow(), moveHistory[index].getCol());
+        } else {
+            lastMoveRow = -1;
+            lastMoveCol = -1;
+        }
+    }
 }

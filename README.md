@@ -6,6 +6,7 @@ From the project root:
 ```bash
 cd /Users/zbx/Desktop/My_Renju/WUZIQI
 javac -d bin src/*.java
+cp src/*.jpg bin/
 java -cp bin Main
 ```
 
@@ -45,6 +46,3 @@ Key components:
 
 ### In Game
 ![image](https://github.com/Fatmanzbx/My-Gobang/blob/master/win.png)
-
-### Analysis / Replay
-![image](https://github.com/Fatmanzbx/My-Gobang/blob/master/reload.png)

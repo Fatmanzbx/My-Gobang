@@ -12,6 +12,7 @@ public class PlayWhite extends DrawChessBoard {
         board.setCell(7, 7, BLACK);
         moveCount++;
         moveHistory[moveCount] = new Stone(BLACK, 7, 7);
+        setLastMove(7, 7);
     }
     
     @Override
@@ -21,6 +22,7 @@ public class PlayWhite extends DrawChessBoard {
         chessDisplay[row][col] = new Chessman(WHITE, true);
         board.setCell(row, col, WHITE);
         moveHistory[moveCount] = new Stone(WHITE, row, col);
+        setLastMove(row, col);
         
         checkGameEnd();
         repaint();

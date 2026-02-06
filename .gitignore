@@ -1,0 +1,6 @@
+.DS_Store
+*.class
+WUZIQI/bin/
+WUZIQI/saves/
+WUZIQI/src/*.class
+WUZIQI/src/.DS_Store

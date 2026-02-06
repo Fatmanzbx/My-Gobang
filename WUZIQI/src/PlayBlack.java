@@ -22,6 +22,7 @@ public class PlayBlack extends DrawChessBoard {
         chessDisplay[row][col] = new Chessman(BLACK, true);
         board.setCell(row, col, BLACK);
         moveHistory[moveCount] = new Stone(BLACK, row, col);
+        setLastMove(row, col);
         
         checkGameEnd();
         repaint();
@@ -54,6 +55,7 @@ public class PlayBlack extends DrawChessBoard {
                 chessDisplay[aiRow][aiCol] = new Chessman(WHITE, true);
                 board.setCell(aiRow, aiCol, WHITE);
                 moveHistory[moveCount] = new Stone(WHITE, aiRow, aiCol);
+                setLastMove(aiRow, aiCol);
                 checkGameEnd();
                 repaint();
             }
